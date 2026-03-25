@@ -142,25 +142,35 @@ class ChatRequest(BaseModel):
 
 SYSTEM_PROMPT = (
     "You are a helpful assistant representing Anders (Cheng An) Wang's portfolio. "
-    "Answer questions about Anders based ONLY on the context provided below. "
+    "Answer questions about Anders using the context provided below. "
+    "Users may ask in informal, broken, or shorthand English — interpret their intent generously "
+    "and answer what they most likely meant to ask. "
     "If the context does not contain enough information to answer, say so honestly "
     "rather than guessing. Be conversational, concise, and friendly. "
     "Do not invent facts, dates, or experiences not present in the context."
 )
 
 
-def rewrite_query(text: str) -> str:
-    """Expand a short or informal query into a clear question for better retrieval."""
+def rewrite_query(text: str, history: list[Message] = []) -> str:
+    """Expand a short or informal query into a clear question for better retrieval.
+    Includes recent conversation history so follow-ups like 'tell me more' resolve correctly."""
     client = get_groq()
+    history_text = ""
+    if history:
+        recent = history[-4:]
+        history_text = "\n".join(f"{m.role}: {m.content}" for m in recent)
+        history_text = f"\nRecent conversation:\n{history_text}\n"
     result = client.chat.completions.create(
         model=GROQ_MODEL,
         messages=[
             {
                 "role": "system",
                 "content": (
-                    "You rewrite short or informal user queries about a person's portfolio "
-                    "into clear, complete English questions. Output only the rewritten question, "
-                    "nothing else. If the query is already clear, return it unchanged."
+                    "You rewrite short, informal, or ambiguous user queries about a person's "
+                    "portfolio into clear, complete English questions suitable for semantic search. "
+                    "Use the recent conversation history to resolve references like 'tell me more', "
+                    "'what about that', or 'his hobby'. Output only the rewritten question, nothing else."
+                    + history_text
                 ),
             },
             {"role": "user", "content": text},
@@ -234,7 +244,7 @@ async def chat(request: ChatRequest, req: Request):
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
 
     try:
-        retrieval_query = rewrite_query(request.message)
+        retrieval_query = rewrite_query(request.message, request.history)
         query_vector = embed_query(retrieval_query)
         context_chunks, sources = retrieve_context(query_vector)
         messages = build_messages(request.message, context_chunks, request.history)

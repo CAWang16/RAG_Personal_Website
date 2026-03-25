@@ -72,5 +72,8 @@ For downtime, Anders plays League of Legends with friends and unwinds with Netfl
 ### Music
 Anders enjoys a wide range of music — from K-pop and pop to funk and hip-hop — depending on his mood.
 
+### Where He's Lived
+Anders has lived in several places across the world. He was in Minnesota, USA from 2021 to 2022 for his studies. After returning to Taiwan, he fulfilled his mandatory military service in the Marine Corps from December 2022 to April 2023. He then moved to Chicago in August 2025 to pursue his Master's in Data Science at Illinois Institute of Technology, where he currently lives.
+
 ### Travel & City Exploration
 Anders loves to travel and has visited Japan, Korea, Canada, and Hong Kong. Now living in Chicago, he enjoys exploring the city — discovering new neighborhoods, food, and culture gives him a sense of excitement and curiosity that carries into his work.

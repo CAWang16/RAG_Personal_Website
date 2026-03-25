@@ -199,6 +199,11 @@ def build_messages(
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
+@app.post("/api/ping")
+async def ping(req: Request):
+    return {"ok": True, "path": req.url.path, "method": req.method}
+
+
 @app.post("/api/chat")
 async def chat(request: ChatRequest, req: Request):
     ip = req.headers.get("x-forwarded-for", "").split(",")[0].strip() or (req.client.host if req.client else "unknown")

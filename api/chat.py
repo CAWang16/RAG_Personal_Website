@@ -97,7 +97,7 @@ app.add_middleware(
     expose_headers=["X-RAG-Sources"],
 )
 
-app.mount("/public", StaticFiles(directory="public", html=True), name="static")
+# Static files mounted AFTER all API routes (see bottom of file)
 
 # Lazy-init clients
 _gemini_client = None
@@ -267,3 +267,9 @@ def health():
         }
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ── Serve static files (must be LAST — catches all remaining routes) ──────────
+import os as _os
+_public = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "public")
+app.mount("/", StaticFiles(directory=_public, html=True), name="static")

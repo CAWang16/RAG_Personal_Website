@@ -1,4 +1,13 @@
 {
   "version": 2,
-  "outputDirectory": "public"
+  "builds": [
+    {
+      "src": "api/chat.py",
+      "use": "@vercel/python",
+      "config": { "includeFiles": ["public/**"] }
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/api/chat" }
+  ]
 }

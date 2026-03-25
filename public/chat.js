@@ -88,7 +88,7 @@ async function sendMessage(text) {
         const payload = line.slice(6);
         if (payload === '[DONE]') break;
         if (payload.startsWith('[ERROR]')) throw new Error(payload.slice(8));
-        full += payload;
+        full += payload.replace(/\\n/g, '\n');
         typingEl.querySelector('.md-content').innerHTML = marked.parse(full);
         scrollToBottom();
       }

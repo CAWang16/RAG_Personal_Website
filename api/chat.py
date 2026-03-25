@@ -281,7 +281,7 @@ async def chat(request: ChatRequest, req: Request):
             if text is None:
                 break
             if text:
-                yield f"data: {text}\n\n"
+                yield f"data: {text.replace(chr(10), '\\n')}\n\n"
         yield "data: [DONE]\n\n"
 
     headers = {"X-RAG-Sources": ", ".join(sources)}

@@ -51,7 +51,26 @@ I am a lifelong learner passionate about every layer of the data field, from the
 
 I am eager to apply my expertise as a **Data Scientist** in industries that move the world forward, including:
 
-- E-commerce & Tech  
-- Web3 & Blockchain  
-- Fintech & Financial Services  
+- E-commerce & Tech
+- Web3 & Blockchain
+- Fintech & Financial Services
 - Business Operations & Marketing
+
+---
+
+## Life Outside of Work
+
+### Dance & Performance
+Street dance has been a major part of Anders's life. During his college years, he managed a dance club of over 100 members and performed in more than 10 business shows. Dance is both a passion and a way to stay connected to a creative community.
+
+### Staying Active
+Anders goes to the gym regularly to stay healthy and clear his mind. Exercise is his go-to outlet for releasing stress and recharging after long work sessions.
+
+### Gaming & Relaxing
+For downtime, Anders plays League of Legends with friends and unwinds with Netflix. Gaming is a way to stay socially connected while having fun.
+
+### Music
+Anders enjoys a wide range of music — from K-pop and pop to funk and hip-hop — depending on his mood.
+
+### Travel & City Exploration
+Anders loves to travel and has visited Japan, Korea, Canada, and Hong Kong. Now living in Chicago, he enjoys exploring the city — discovering new neighborhoods, food, and culture gives him a sense of excitement and curiosity that carries into his work.

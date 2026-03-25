@@ -7,10 +7,8 @@ Endpoints:
 """
 
 import os
-import time
 import threading
 import asyncio
-from collections import defaultdict
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -21,6 +19,7 @@ from dotenv import load_dotenv
 from google import genai
 from pinecone import Pinecone
 from groq import Groq
+from upstash_redis import Redis
 
 load_dotenv()
 
@@ -32,33 +31,60 @@ TOP_K          = 4
 MIN_SCORE      = 0.4
 MAX_TOKENS     = 512
 TEMPERATURE    = 0.3
-RATE_LIMIT_PER_MINUTE = 5    # max requests per IP per minute
-RATE_LIMIT_PER_DAY    = 50   # max requests per IP per day
+RATE_LIMIT_PER_MINUTE = 5
+RATE_LIMIT_PER_DAY    = 50
 # ──────────────────────────────────────────────────────────────────────────────
 
-# ── Rate limiter ──────────────────────────────────────────────────────────────
-_rate_data: dict[str, list[float]] = defaultdict(list)
-_rate_lock = threading.Lock()
+# ── Rate limiter (Upstash Redis — works across serverless instances) ──────────
+_redis: Redis | None = None
+
+def get_redis() -> Redis | None:
+    global _redis
+    if _redis is None:
+        url   = os.getenv("UPSTASH_REDIS_REST_URL")
+        token = os.getenv("UPSTASH_REDIS_REST_TOKEN")
+        if url and token:
+            _redis = Redis(url=url, token=token)
+    return _redis
 
 def check_rate_limit(ip: str) -> None:
-    """Raise 429 if the IP has exceeded per-minute or per-day limits."""
-    now = time.time()
-    with _rate_lock:
-        timestamps = _rate_data[ip]
-        timestamps[:] = [t for t in timestamps if now - t < 86400]
-        per_minute = sum(1 for t in timestamps if now - t < 60)
-        per_day    = len(timestamps)
-        if per_minute >= RATE_LIMIT_PER_MINUTE:
-            raise HTTPException(
-                status_code=429,
-                detail="Too many requests. Please wait a moment before asking again.",
-            )
-        if per_day >= RATE_LIMIT_PER_DAY:
-            raise HTTPException(
-                status_code=429,
-                detail="Daily limit reached. Please come back tomorrow.",
-            )
-        timestamps.append(now)
+    """Raise 429 if the IP has exceeded per-minute or per-day limits.
+    Uses Upstash Redis when available; falls back to a per-process counter."""
+    r = get_redis()
+    if r:
+        # Sliding window via Redis INCR + EXPIRE
+        min_key = f"rl:min:{ip}"
+        day_key = f"rl:day:{ip}"
+        per_minute = r.incr(min_key)
+        if per_minute == 1:
+            r.expire(min_key, 60)
+        per_day = r.incr(day_key)
+        if per_day == 1:
+            r.expire(day_key, 86400)
+        if per_minute > RATE_LIMIT_PER_MINUTE:
+            raise HTTPException(status_code=429,
+                detail="Too many requests. Please wait a moment before asking again.")
+        if per_day > RATE_LIMIT_PER_DAY:
+            raise HTTPException(status_code=429,
+                detail="Daily limit reached. Please come back tomorrow.")
+    else:
+        # Local fallback for development (single process only)
+        from collections import defaultdict
+        import time
+        if not hasattr(check_rate_limit, "_data"):
+            check_rate_limit._data = defaultdict(list)
+            check_rate_limit._lock = threading.Lock()
+        now = time.time()
+        with check_rate_limit._lock:
+            ts = check_rate_limit._data[ip]
+            ts[:] = [t for t in ts if now - t < 86400]
+            if sum(1 for t in ts if now - t < 60) >= RATE_LIMIT_PER_MINUTE:
+                raise HTTPException(status_code=429,
+                    detail="Too many requests. Please wait a moment before asking again.")
+            if len(ts) >= RATE_LIMIT_PER_DAY:
+                raise HTTPException(status_code=429,
+                    detail="Daily limit reached. Please come back tomorrow.")
+            ts.append(now)
 # ──────────────────────────────────────────────────────────────────────────────
 
 app = FastAPI()

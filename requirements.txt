@@ -5,3 +5,4 @@ uvicorn
 google-genai
 pydantic
 groq
+upstash-redis

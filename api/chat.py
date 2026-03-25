@@ -200,7 +200,8 @@ def build_messages(
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest, req: Request):
-    check_rate_limit(req.client.host)
+    ip = req.headers.get("x-forwarded-for", "").split(",")[0].strip() or (req.client.host if req.client else "unknown")
+    check_rate_limit(ip)
 
     if not request.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty.")

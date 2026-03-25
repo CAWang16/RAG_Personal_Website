@@ -1,8 +1,16 @@
 {
   "version": 2,
-  "functions": {
-    "api/chat.py": {
-      "runtime": "python3.12"
+  "builds": [
+    {
+      "src": "api/chat.py",
+      "use": "@vercel/python",
+      "config": { "includeFiles": ["public/**"] }
     }
-  }
+  ],
+  "routes": [
+    { "src": "/api/chat", "dest": "/api/chat.py" },
+    { "src": "/api/health", "dest": "/api/chat.py" },
+    { "src": "/api/ping", "dest": "/api/chat.py" },
+    { "src": "/(.*)", "dest": "/api/chat.py" }
+  ]
 }

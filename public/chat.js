@@ -20,6 +20,9 @@ toggle.addEventListener('click', () => {
   iconOpen.style.display  = open ? 'none'  : 'block';
   iconClose.style.display = open ? 'block' : 'none';
   if (open) input.focus();
+  toggle.classList.add('no-pulse');
+  const hint = document.getElementById('chat-hint');
+  if (hint) hint.remove();
 });
 
 // ── Suggested questions ───────────────────────────────────────────────────────
@@ -86,7 +89,7 @@ async function sendMessage(text) {
         if (payload === '[DONE]') break;
         if (payload.startsWith('[ERROR]')) throw new Error(payload.slice(8));
         full += payload;
-        typingEl.querySelector('.md-content').textContent = full;
+        typingEl.querySelector('.md-content').innerHTML = marked.parse(full);
         scrollToBottom();
       }
     }

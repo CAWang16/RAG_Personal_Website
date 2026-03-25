@@ -591,6 +591,16 @@ footer {
 }
 
 /* ── Chat Toggle Button ───────────────────────────────────────────────────── */
+@keyframes chat-pulse {
+  0%   { transform: scale(1);    opacity: 0.7; }
+  70%  { transform: scale(1.9);  opacity: 0; }
+  100% { transform: scale(1.9);  opacity: 0; }
+}
+@keyframes hint-fade {
+  0%, 60% { opacity: 1; transform: translateY(0); }
+  100%     { opacity: 0; transform: translateY(4px); pointer-events: none; }
+}
+
 #chat-toggle {
   position: fixed;
   bottom: 1.75rem;
@@ -608,8 +618,37 @@ footer {
   z-index: 200;
   transition: transform 0.2s, background 0.2s;
 }
+#chat-toggle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: chat-pulse 2s ease-out infinite;
+  z-index: -1;
+}
+#chat-toggle.no-pulse::before { animation: none; }
 #chat-toggle:hover { transform: scale(1.08); background: #3b87e8; }
 #chat-toggle svg { width: 22px; height: 22px; color: #fff; }
+
+#chat-hint {
+  position: fixed;
+  bottom: 5.5rem;
+  right: 1.75rem;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.78rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  z-index: 200;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  animation: hint-fade 4s ease forwards;
+  animation-delay: 1.5s;
+  opacity: 0;
+  animation-fill-mode: both;
+}
 
 /* ── Chat Panel ───────────────────────────────────────────────────────────── */
 #chat-panel {
@@ -730,12 +769,17 @@ footer {
 }
 .msg.assistant .md-content ul,
 .msg.assistant .md-content ol {
-  margin: 0.4rem 0 0.5rem 1.1rem;
-  padding: 0;
+  margin: 0.4rem 0 0.5rem 0;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+.msg.assistant .md-content ol {
+  list-style: decimal;
 }
 .msg.assistant .md-content li {
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.25rem;
   line-height: 1.55;
+  display: list-item;
 }
 .msg.assistant .md-content strong {
   color: var(--text);

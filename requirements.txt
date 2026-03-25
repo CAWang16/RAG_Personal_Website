@@ -1,6 +1,7 @@
 pinecone
 python-dotenv
-tqdm
-markdown
-tiktoken
-google-generativeai
+fastapi
+uvicorn
+google-genai
+pydantic
+groq

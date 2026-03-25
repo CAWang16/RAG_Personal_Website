@@ -14,19 +14,19 @@ import hashlib
 from pathlib import Path
 from dotenv import load_dotenv
 
-import google.generativeai as genai
+from google import genai
 from pinecone import Pinecone, ServerlessSpec
 
 load_dotenv()
-
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 # ── Config ────────────────────────────────────────────────────────────────────
-KNOWLEDGE_DIR   = "./knowledge-base"   # folder with your .md files
-CHUNK_SIZE      = 400                  # words per chunk
-CHUNK_OVERLAP   = 50                   # words overlap between chunks
-EMBED_MODEL     = "models/text-embedding-004"
-EMBED_DIM       = 768
+KNOWLEDGE_DIR   = "./knowledge-base"
+CHUNK_SIZE      = 400
+CHUNK_OVERLAP   = 50
+EMBED_MODEL     = "models/gemini-embedding-001"
+EMBED_DIM       = 3072
 PINECONE_INDEX  = os.getenv("PINECONE_INDEX", "portfolio")
-BATCH_SIZE      = 50                   # upsert batch size (Pinecone limit: 100)
+BATCH_SIZE      = 50
 # ──────────────────────────────────────────────────────────────────────────────
 
 
@@ -72,13 +72,11 @@ def make_chunk_id(filename: str, chunk_index: int) -> str:
 
 
 def embed_texts(texts: list[str]) -> list[list[float]]:
-    """Call Gemini embedding API. Retries once on rate-limit."""
-    result = genai.embed_content(
+    response = client.models.embed_content(
         model=EMBED_MODEL,
-        content=texts,
-        task_type="retrieval_document",
+        contents=texts
     )
-    return result["embedding"] if isinstance(texts, str) else result["embedding"]
+    return [e.values for e in response.embeddings]
 
 
 def batch_embed(texts: list[str], batch_size: int = 20) -> list[list[float]]:
@@ -109,10 +107,6 @@ def upsert_to_pinecone(index, vectors: list[dict]):
 
 def main():
     print("\n=== Portfolio RAG Ingestion ===\n")
-
-    # ── 1. Init Gemini ──────────────────────────────────────────────────────
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    print("Gemini ready.")
 
     # ── 2. Init Pinecone ────────────────────────────────────────────────────
     pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))

@@ -1,0 +1,11 @@
+{
+  "builds": [
+    {
+      "src": "api/chat.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/chat" }
+  ]
+}

@@ -1,6 +1,7 @@
 pinecone
 python-dotenv
 fastapi
+aiofiles
 uvicorn
 google-genai
 pydantic

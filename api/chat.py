@@ -12,6 +12,7 @@ import asyncio
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -267,4 +268,9 @@ def health():
         }
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ── Serve static files (must be LAST) ────────────────────────────────────────
+_public = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "public")
+app.mount("/", StaticFiles(directory=_public, html=True), name="static")
 

@@ -480,7 +480,17 @@ const expContainer = document.getElementById('exp-container');
           const imgs = EXP_IMAGES[id] || [];
           lbImages = imgs;   // keep in sync for lightbox
           expHint.style.display = 'none';
-          expImages.innerHTML = imgs.map((img, i) => `
+          if (imgs.length === 0) {
+            expImages.innerHTML = `
+              <div class="exp-no-photos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="m21 15-5-5L5 21"/>
+                </svg>
+                <p>No photos available for this experience</p>
+              </div>`;
+          } else expImages.innerHTML = imgs.map((img, i) => `
             <div class="exp-img-card">
               <img src="${img.src}" alt="${img.caption}" data-index="${i}"
                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">

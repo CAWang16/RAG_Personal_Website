@@ -149,6 +149,28 @@ SYSTEM_PROMPT = (
 )
 
 
+def rewrite_query(text: str) -> str:
+    """Expand a short or informal query into a clear question for better retrieval."""
+    client = get_groq()
+    result = client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You rewrite short or informal user queries about a person's portfolio "
+                    "into clear, complete English questions. Output only the rewritten question, "
+                    "nothing else. If the query is already clear, return it unchanged."
+                ),
+            },
+            {"role": "user", "content": text},
+        ],
+        max_tokens=64,
+        temperature=0,
+    )
+    return result.choices[0].message.content.strip()
+
+
 def embed_query(text: str) -> list[float]:
     client = get_gemini()
     response = client.models.embed_content(
@@ -212,7 +234,8 @@ async def chat(request: ChatRequest, req: Request):
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
 
     try:
-        query_vector = embed_query(request.message)
+        retrieval_query = rewrite_query(request.message)
+        query_vector = embed_query(retrieval_query)
         context_chunks, sources = retrieve_context(query_vector)
         messages = build_messages(request.message, context_chunks, request.history)
     except Exception as exc:

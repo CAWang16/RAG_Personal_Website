@@ -3,11 +3,15 @@
   "builds": [
     {
       "src": "api/chat.py",
-      "use": "@vercel/python",
-      "config": { "includeFiles": ["public/**"] }
+      "use": "@vercel/python"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/api/chat" }
+    { "src": "/api/(.*)", "dest": "/api/chat" },
+    { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
